@@ -1,0 +1,72 @@
+From: Jonathas <local@fedora>
+Date: Thu, 19 Nov 2026 11:17:00 -0300
+Subject: [PATCH] validity: Add sensor profile for 0190:006a (ThinkPad E480) and tune threshold
+
+Some Lenovo ThinkPad E480/E490/E580/E590 units ship with the Synaptics
+06cb:00a2 Metallica MOH sensor reporting revision 0190:006a (ROM 6.7
+build 0xa4, product 0x30, patch level 0xd103, Winbond W25Q80B flash
+ef:40) instead of 0190:0061.
+
+Add a matching ValiditySensorProfile entry for dev_version 0x6a mapped
+to the 0x199 (57K0 FM-3380-003) tables, and lower VALIDITY_BZ3_THRESHOLD
+from 10 to 8 to improve first-touch match reliability while staying well
+above the maximum observed impostor score (4).
+
+Tested on Lenovo ThinkPad E480 running Fedora 45 (fprintd + PAM/KDE).
+---
+ libfprint/drivers/validity/validity-proto.c | 25 +++++++++++++++++++++
+ libfprint/drivers/validity/validity.c       |  2 +-
+ 2 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/libfprint/drivers/validity/validity-proto.c b/libfprint/drivers/validity/validity-proto.c
+index 8f79433..c01d56f 100644
+--- a/libfprint/drivers/validity/validity-proto.c
++++ b/libfprint/drivers/validity/validity-proto.c
+@@ -176,6 +176,31 @@ static const ValiditySensorProfile sensor_profiles[] = {
+     .image_recon_enroll = image_recon_enroll_0199,
+     .image_recon_len = sizeof (image_recon_0199),
+   },
++  {
++    .dev_major = 0x0190,
++    .dev_version = 0x6a,
++    .sensor_type = 0x199,
++    .name = "57K0 FM-3380-003 (rev 006a)",
++    .rom_major = 6,
++    .rom_minor = 7,
++    .bytes_per_line = 0x78,
++    .repeat_multiplier = 2,
++    .lines_per_calibration_data = 112,
++    .line_width = 112,
++    .key_calibration_line = 0x38,
++    .calibration_frames = 3,
++    .calibration_iterations = 3,
++    .calibration_blob = calibration_blob_0199,
++    .calibration_blob_len = sizeof (calibration_blob_0199),
++    .capture_prog = capture_prog_6_7_0199,
++    .capture_prog_len = sizeof (capture_prog_6_7_0199),
++    .finger_detect = finger_detect_0199,
++    .finger_detect_enroll = finger_detect_enroll_0199,
++    .finger_detect_len = sizeof (finger_detect_0199),
++    .image_recon = image_recon_0199,
++    .image_recon_enroll = image_recon_enroll_0199,
++    .image_recon_len = sizeof (image_recon_0199),
++  },
+ };
+ 
+ const ValidityFlashIc *
+diff --git a/libfprint/drivers/validity/validity.c b/libfprint/drivers/validity/validity.c
+index da16233..ceb05f8 100644
+--- a/libfprint/drivers/validity/validity.c
++++ b/libfprint/drivers/validity/validity.c
+@@ -102,7 +102,7 @@
+ #define VALIDITY_IMAGE_SIZE 112
+ #define VALIDITY_IMAGE_SCALE 2
+ #define VALIDITY_IMAGE_PAD 16
+-#define VALIDITY_BZ3_THRESHOLD 10
++#define VALIDITY_BZ3_THRESHOLD 8
+ #define VALIDITY_ENROLL_STAGES 15
+ 
+ /* Partitions erased after pairing, in vendor order */
+-- 
+2.47.0
+

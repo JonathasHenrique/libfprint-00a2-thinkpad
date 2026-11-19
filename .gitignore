@@ -1,0 +1,23 @@
+# Build artifacts
+*.o
+*.swp
+_build/
+build/
+rpmbuild/
+extracted/
+vendor-data/
+
+# Package outputs
+*.rpm
+*.deb
+*.pkg.tar.*
+
+# Proprietary Windows driver & firmware blobs (never commit)
+*.exe
+*.bin
+*.dll
+*.cat
+*.inf
+*.sys
+*.xpfwext
+*.xefwext
